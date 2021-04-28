@@ -5,14 +5,14 @@
       <div class="todo">
         <div class="flex between mb-15">
           <input class="input-add" type="text" v-model.trim="todotext">
-          <button class="button add" @click="addToDo">追加</button>
+          <button @click="addToDo" class="button add">追加</button>
         </div>
 
-        <div class="flex between mb-15" v-for="(todo, index) in lists" :key="index">
+        <div class="flex between mb-15" v-for="(todo, index) in lists" :key="todo.id" >
           <input class="input-update" type="text" v-model="todo.list">
           <div>
-            <button class="button update">更新</button>
-            <button @ckick="deleteToDo" class="button delete">削除</button>
+            <button @click="update(todo.id, index)" class="button update">更新</button>
+            <button @click="deleteRow(todo.id, index)" class="button delete">削除</button>
           </div>
         </div>
       </div>
@@ -21,33 +21,59 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   data() {
     return {
-      lists:[
-        {list:'パンを買う'},
-        {list:'コーヒーを買う'},
-      ],
+      lists:[],
       todotext:""
     };
   },
+
+  mounted: function() {
+    axios.get('https://vast-fortress-49570.herokuapp.com/api/todolist')
+    .then((res) => this.lists = res.data.data);
+  },
+
   methods: {
-    addToDo() {
-      this.lists.push({
-        list: this.todotext
+    update: function(id, index) {
+      axios.put('https://vast-fortress-49570.herokuapp.com/api/todolist/' + id, {
+        list: this.lists[index].list,
+      })
+      .then((res) => {
+        console.log(res);
+        this.$router.go({
+          path: this.$router.currentRoute.path,
+          force: true,
+        });
       });
-      this.todotext = "";
     },
-    deleteToDo() {
-      this.lists
-    }
-    // update() {
-    //   this.lists.
 
-    // },
-    // destroy() {
+    deleteRow: function(id) {
+      axios.delete('https://vast-fortress-49570.herokuapp.com/api/todolist/' + id)
+      .then((res) => {
+        console.log(res.data);
+        this.$router.go({
+          path: this.$router.currentRoute.path,
+          force: true,
+        });
+      });
+    },
 
-    // }
+    addToDo: function() {
+    axios 
+      .post('https://vast-fortress-49570.herokuapp.com/api/todolist', {
+        list: this.todotext,
+      })
+      .then((res) => {
+        console.log(res);
+        this.todotext = "";
+        this.$router.go({
+          path: this.$router.currentRoute.path,
+          force: true,
+        });
+      });
+    },
   }
 };
 </script>
@@ -134,8 +160,7 @@ export default {
   color: #fff;
 }
 
-
-
+/* 全体 */
 .mb-15 {
   margin-bottom: 15px;
 }
